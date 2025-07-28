@@ -13,7 +13,7 @@ import (
 
 type Event struct {
 	Event string                 `json:"event"`           // "page_view"
-	TS    time.Time              `json:"ts"`              // client timestamp
+	TS    int64                  `json:"ts"`              // client timestamp
 	URL   string                 `json:"url,omitempty"`   // page url
 	Ref   string                 `json:"ref,omitempty"`   // referrer
 	Props map[string]interface{} `json:"props,omitempty"` // future‑proof
@@ -29,7 +29,7 @@ func main() {
 	  CREATE TABLE IF NOT EXISTS events(
 	      id       INTEGER PRIMARY KEY AUTOINCREMENT,
 	      event    TEXT,
-	      ts       DATETIME,
+	      ts       INTEGER,
 	      url      TEXT,
 	      ref      TEXT,
 	      props    JSON
@@ -54,8 +54,8 @@ func main() {
 			http.Error(w, "bad json", http.StatusBadRequest)
 			return
 		}
-		if ev.TS.IsZero() {
-			ev.TS = time.Now().UTC()
+		if ev.TS == 0 {
+			ev.TS = time.Now().Unix()
 		}
 
 		_, err := db.ExecContext(r.Context(),
@@ -78,7 +78,7 @@ func main() {
 
 	// ---------- ticker to show progress ----------
 	go func(ctx context.Context) {
-		t := time.NewTicker(time.Minute)
+		t := time.NewTicker(time.Second * 5)
 		for {
 			select {
 			case <-t.C:
