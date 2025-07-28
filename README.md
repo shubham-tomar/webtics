@@ -1,2 +1,0 @@
-# webtics
-web analytics svc
